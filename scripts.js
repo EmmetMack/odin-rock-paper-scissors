@@ -1,9 +1,3 @@
-//PLAN:
-// randomly choose what the computer plays
-//have the user type in an option
-//compare the choices to see who  wins
-//output into the console who wins
-//allow option to replay, etc
 
 //choose computer's choice
 function computerPlay() {
@@ -12,57 +6,85 @@ function computerPlay() {
     return choice;
 }
 
-//play a round of rock paper scissors
-function playRound(playerSelection, computerSelection) {
+//play a round of rock paper scissors, call function to update the game
+function playRound(e) {
+    const playerSelection = e.path[0].getAttribute("value");
+    const computerSelection = computerPlay();
     let cleansedPlayer = playerSelection.toLowerCase();
     if (cleansedPlayer === "rock" && computerSelection === "scissors") {
-        return 1;
+        return updateGame(1, cleansedPlayer, computerSelection);
     } else if (cleansedPlayer === "paper" && computerSelection === "rock") {
-        return 1;
+        return updateGame(1, cleansedPlayer, computerSelection);
     } else if (cleansedPlayer === "scissors" && computerSelection === "paper") {
-        return 1;
+        return updateGame(1, cleansedPlayer, computerSelection);
     } else if (computerSelection === "rock" && cleansedPlayer === "scissors") {
-        return  0;
+        return  updateGame(0, cleansedPlayer, computerSelection);
     } else if (computerSelection === "paper" && cleansedPlayer === "rock") {
-        return 0;
+        return updateGame(0, cleansedPlayer, computerSelection);
     } else if (computerSelection === "scissors" && cleansedPlayer === "paper") {
-        return  0;
+        return  updateGame(0, cleansedPlayer, computerSelection);
     } else {
-        return -1;
+        return updateGame(-1, cleansedPlayer, computerSelection);
     }
 }
 
-// const playerSelection = 'rock';
-// const computerSelection = computerPlay();
-// console.log(playRound(playerSelection, computerSelection));
 
-//play five rounds of the game
-function game() {
-    let playerWins = 0;
-    let computerWins = 0;
-    for (let i = 0; i < 5; i++) {
-        let playerSelection = prompt("Do you want rock, paper, or scissors?");
-        if (!['rock', 'paper', 'scissors'].includes(playerSelection.toLowerCase()))  {
-            playerSelection = prompt("Please enter one of these values: ", ['rock', 'paper', 'scissors']);
-        }
-        let computerSelection = computerPlay();
-        let result = playRound(playerSelection, computerSelection);
-        if (result === 1) {
-            playerWins ++;
-            console.log(`You win! ${playerSelection} beats ${computerSelection}`);
-        } else if (result === 0) {
-            console.log(`You lose! ${playerSelection} beats ${computerSelection}`);
-            computerWins++;
-        } else {
-            console.log(`Draw! You both selected ${playerSelection}`);
-        }
-    }
-    if (playerWins > computerWins) {
-
-        console.log(`You won the game! \nPlayer wins: ${playerWins} \nComputer wins ${computerWins}`);
-    } else if (computerWins > playerWins) {
-        console.log(`You lost the game! \nPlayer wins: ${playerWins} \nComputer wins ${computerWins}`);
+let playerWins = 0;
+let computerWins = 0;
+//read result of round and then update dom accordingly
+function updateGame(result, playerSelection, computerSelection) {
+    
+    
+    if (result === 1) {
+        playerWins ++;
+        updateDom(true, playerSelection, computerSelection);
+    } else if (result === 0) {
+        computerWins++;
+        updateDom(false, playerSelection, computerSelection);
     } else {
-        console.log(`You tied the game! \nPlayer wins: ${playerWins} \nComputer wins ${computerWins}`);
+        updateDom(true, playerSelection, computerSelection, true);
+    }
+
+    if (playerWins === 5) {
+        won(true);
+        return;
+    } else if(computerWins === 5) {
+        won(false);
+        return;
+    }
+    
+   
+}
+
+function updateDom(playerWon, playerSelection, computerSelection, draw = false) {
+    const resultNode = document.getElementById('result');
+    const playerWinsNode = document.getElementById('playerWins');
+    const computerWinsNode = document.getElementById('computerWins');
+    if (playerWon && !draw) {
+        resultNode.innerText = `Round Result: You win! ${playerSelection} beats ${computerSelection}`;
+        playerWinsNode.innerText = `Player Wins: ${playerWins}`;
+    } else if (!playerWon && !draw) {
+       resultNode.innerText = `Round Result: You lose! ${computerSelection} beats ${playerSelection}`;
+       computerWinsNode.innerText = `Computer Wins: ${computerWins}`;
+    } else {
+        resultNode.innerText = `Round Result: Draw! You both selected ${playerSelection}`;
     }
 }
+//display message saying who won after someone hits 5 points
+function won(playerWon) {
+    const winMessageNode = document.createElement('h1');
+    if (playerWon) {
+        winMessageNode.innerText = `You won the game!`
+        const resultsDiv = document.querySelector('.results');
+        resultsDiv.appendChild(winMessageNode);
+    } else {
+        winMessageNode.innerText = `You lost the game!`
+        const resultsDiv = document.querySelector('.results');
+        resultsDiv.appendChild(winMessageNode);
+    }
+    
+}
+
+//add event listeners for the buttons
+const buttons = document.querySelectorAll("button");
+buttons.forEach(btn => btn.addEventListener('click', playRound));
